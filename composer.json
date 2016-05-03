@@ -1,5 +1,5 @@
 {
-	"name": "frozennode/administrator",
+	"name": "vhall/administrator",
 	"description": "A database interface package for Laravel",
 	"homepage": "http://administrator.frozennode.com",
 	"keywords": ["administrator", "admin", "database", "laravel-administrator", "laravel", "cms"],
@@ -8,6 +8,7 @@
 		{
 			"name": "Jan Hartigan",
 			"email": "jan@frozennode.com"
+            "change": "vhall_team"
 		}
 	],
 	"support": {
