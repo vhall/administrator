@@ -271,21 +271,32 @@ class Config extends ConfigBase implements ConfigInterface {
 	 */
 	public function updateModel($model, FieldFactory $fieldFactory, ActionFactory $actionFactory)
 	{
-		//set the data model to the active model
-		$this->setDataModel($model->find($model->getKey()));
+        if ($this->getTableIsUser()) {
+            /**
+             * 通过接口计算数据
+             * setAttribute('attributes', )
+             * setAttribute('attributes', )
+             * setAttribute('admin_item_link', )
+             *
+             */
+        } else {
+            //set the data model to the active model
+            $this->setDataModel($model->find($model->getKey()));
 
-		//include the item link if one was supplied
-		if ($link = $this->getModelLink())
-		{
-			$model->setAttribute('admin_item_link', $link);
-		}
+            //include the item link if one was supplied
+            if ($link = $this->getModelLink())
+            {
+                $model->setAttribute('admin_item_link', $link);
+            }
 
-		//set up the model with the edit fields new data
-		$model->setAttribute('administrator_edit_fields', $fieldFactory->getEditFieldsArrays(true));
+            //set up the model with the edit fields new data
+            $model->setAttribute('administrator_edit_fields', $fieldFactory->getEditFieldsArrays(true));
 
-		//set up the new actions data
-		$model->setAttribute('administrator_actions', $actionFactory->getActionsOptions(true));
-		$model->setAttribute('administrator_action_permissions', $actionFactory->getActionPermissions(true));
+            //set up the new actions data
+            $model->setAttribute('administrator_actions', $actionFactory->getActionsOptions(true));
+            $model->setAttribute('administrator_action_permissions', $actionFactory->getActionPermissions(true));
+        }
+		
 
 		return $model;
 	}
@@ -567,4 +578,18 @@ class Config extends ConfigBase implements ConfigInterface {
 
 		return $model;
 	}
+
+    /**
+     * get table is origin
+     */
+
+    public function getTableIsUser()
+    {
+        return false;
+
+        $model = $this->getDataModel();
+        $table = $model->getTable();
+
+        return $table == 'users' ? true : false;
+    }
 }

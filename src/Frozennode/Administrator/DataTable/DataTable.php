@@ -78,20 +78,37 @@ class DataTable {
 	 */
 	public function getRows(DB $db, $filters = null, $page = 1, $sort = null)
 	{
-		//prepare the query
-		extract($this->prepareQuery($db, $page, $sort, $filters));
+		// check tbale is user
+        if ($this->getTableIsUser()) {
+            /**
+             * 通过接口计算数据
+             * $page 当前页
+             * $this->rowsPerPage 每页获取条目
+             * $sort 排序
+             */
 
-		//run the count query
-		$output = $this->performCountQuery($countQuery, $querySql, $queryBindings, $page);
+            $output = [
+                'page' => '',
+                'last' => '',
+                'total' => '',
+                'results' => ''
+            ];
+        } else {
+            //prepare the query
+            extract($this->prepareQuery($db, $page, $sort, $filters));
 
-		//now we need to limit and offset the rows in remembrance of our dear lost friend paginate()
-		$query->take($this->rowsPerPage);
-		$query->skip($this->rowsPerPage * ($output['page'] === 0 ? $output['page'] : $output['page'] - 1));
+            //run the count query
+            $output = $this->performCountQuery($countQuery, $querySql, $queryBindings, $page);
 
-		//parse the results
-		$output['results'] = $this->parseResults($query->get());
+            //now we need to limit and offset the rows in remembrance of our dear lost friend paginate()
+            $query->take($this->rowsPerPage);
+            $query->skip($this->rowsPerPage * ($output['page'] === 0 ? $output['page'] : $output['page'] - 1));
 
-		return $output;
+            //parse the results
+            $output['results'] = $this->parseResults($query->get());
+
+            return $output;
+        }
 	}
 
 	/**
@@ -392,5 +409,18 @@ class DataTable {
 	public function getRowsPerPage()
 	{
 		return $this->rowsPerPage;
+	}
+
+	/**
+	 * get table is user
+	 */
+	public function getTableIsUser()
+	{
+        return false;
+
+        $model = $this->config->getDataModel();
+        $table = $model->getTable();
+
+        return $table == 'users' ? true : false;
 	}
 }
