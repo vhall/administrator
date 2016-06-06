@@ -78,37 +78,20 @@ class DataTable {
 	 */
 	public function getRows(DB $db, $filters = null, $page = 1, $sort = null)
 	{
-		// check tbale is user
-        if ($this->getTableIsUser()) {
-            /**
-             * 通过接口计算数据
-             * $page 当前页
-             * $this->rowsPerPage 每页获取条目
-             * $sort 排序
-             */
+		//prepare the query
+		extract($this->prepareQuery($db, $page, $sort, $filters));
 
-            $output = [
-                'page' => '',
-                'last' => '',
-                'total' => '',
-                'results' => ''
-            ];
-        } else {
-            //prepare the query
-            extract($this->prepareQuery($db, $page, $sort, $filters));
+		//run the count query
+		$output = $this->performCountQuery($countQuery, $querySql, $queryBindings, $page);
 
-            //run the count query
-            $output = $this->performCountQuery($countQuery, $querySql, $queryBindings, $page);
+		//now we need to limit and offset the rows in remembrance of our dear lost friend paginate()
+		$query->take($this->rowsPerPage);
+		$query->skip($this->rowsPerPage * ($output['page'] === 0 ? $output['page'] : $output['page'] - 1));
 
-            //now we need to limit and offset the rows in remembrance of our dear lost friend paginate()
-            $query->take($this->rowsPerPage);
-            $query->skip($this->rowsPerPage * ($output['page'] === 0 ? $output['page'] : $output['page'] - 1));
+		//parse the results
+		$output['results'] = $this->parseResults($query->get());
 
-            //parse the results
-            $output['results'] = $this->parseResults($query->get());
-
-            return $output;
-        }
+		return $output;
 	}
 
 	/**
@@ -207,11 +190,13 @@ class DataTable {
 	 */
 	public function performCountQuery(QueryBuilder $countQuery, $querySql, $queryBindings, $page)
 	{
-		//grab the model instance
+		// grab the model instance
 		$model = $this->config->getDataModel();
+		// get local table;
+		$table = $model->getTable();
 
 		//then wrap the inner table and perform the count
-		$sql = "SELECT COUNT({$model->getKeyName()}) AS aggregate FROM ({$querySql}) AS agg";
+		$sql = "SELECT COUNT({$model->getKeyName()}) AS aggregate FROM ($table)";
 
 		//then perform the count query
 		$results = $countQuery->getConnection()->select($sql, $queryBindings);
