@@ -793,10 +793,13 @@
 					}
 				}
 
-				this.pagination.page(newPage);
+				if (newPage != currPage) {
+					// 语句会导致页面渲染两次，请求在做判断
+					this.pagination.page(newPage);
 
-				//update the rows
-				this.updateRows();
+					//update the rows
+					this.updateRows();
+				}
 			},
 
 			/**
