@@ -190,13 +190,11 @@ class DataTable {
 	 */
 	public function performCountQuery(QueryBuilder $countQuery, $querySql, $queryBindings, $page)
 	{
-		// grab the model instance
+		//grab the model instance
 		$model = $this->config->getDataModel();
-		// get local table;
-		$table = $model->getTable();
 
 		//then wrap the inner table and perform the count
-		$sql = "SELECT COUNT({$model->getKeyName()}) AS aggregate FROM ($table)";
+		$sql = "SELECT COUNT({$model->getKeyName()}) AS aggregate FROM ({$querySql}) AS agg";
 
 		//then perform the count query
 		$results = $countQuery->getConnection()->select($sql, $queryBindings);
@@ -394,18 +392,5 @@ class DataTable {
 	public function getRowsPerPage()
 	{
 		return $this->rowsPerPage;
-	}
-
-	/**
-	 * get table is user
-	 */
-	public function getTableIsUser()
-	{
-        return false;
-
-        $model = $this->config->getDataModel();
-        $table = $model->getTable();
-
-        return $table == 'users' ? true : false;
 	}
 }
